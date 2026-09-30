@@ -41,7 +41,12 @@ dvPop(btn,[ ['Rename','edit',()=>dvRename(f)],['Edit','note',()=>dvEditFile(f)],
 async function dvEditFile(f){if(await dvGuard(f))dvOpenEd(f)}
 async function dvRename(f){if(!await dvGuard(f))return;const n=await dvAsk({title:'Rename File',input:1,value:f.name,ok:'Rename'});if(n===null||!n.trim())return;f.name=dvName(n);await dvDB.put(f);dvFiles();dvToast('Renamed')}
 async function dvDelFile(f){if(!await dvGuard(f))return;if(!await dvAsk({title:'Delete file?',msg:f.name,ok:'Delete'}))return;await dvDB.del(f.id);dvFiles();dvToast('Deleted')}
-async function dvShareFile(f){const pin=await dvGuard(f);if(!pin)return;if(typeof CompressionStream==='undefined')return dvShareText(f.name,f.code);try{const l=await dvMakeLink(f,pin);if(navigator.share)await navigator.share({title:f.name,text:f.name,url:l});else{await navigator.clipboard.writeText(l);dvToast('Link copied')}}catch(e){if(e.name!=='AbortError')dvToast('Could not create the link')}}
+async function dvShareFile(f){const pin=await dvGuard(f);if(!pin)return;if(typeof CompressionStream==='undefined')return dvShareText(f.name,f.code);
+if(!await dvAsk({title:'Create short link?',msg:'To keep the link short, the note is stored on the free is.gd link service. Anyone with the link can open it'+(f.pin?', but they need the PIN.':'. Lock the note with a PIN first if it is private.'),ok:'Create Link'}))return;
+dvToast('Creating link...');
+try{const long=await dvMakeLink(f,pin);if(long.length>3500)throw new Error('long');const s=await dvMakeShort(long,dvSlugOf(f));
+if(navigator.share)await navigator.share({title:f.name,text:f.name,url:s});else{await navigator.clipboard.writeText(s);dvToast('Link copied')}}
+catch(e){if(e.name==='AbortError')return;if(f.pin)dvToast('Could not create the link. Please try again.');else{dvToast('Could not make a short link. Sharing the text instead.');dvShareText(f.name,f.code)}}}
 async function dvShareText(t,c){try{const file=new File([c],t,{type:'text/plain'});if(navigator.canShare&&navigator.canShare({files:[file]}))return await navigator.share({files:[file],title:t});if(navigator.share)return await navigator.share({title:t,text:c});await navigator.clipboard.writeText(c);dvToast('Copied to clipboard')}catch(e){if(e.name!=='AbortError')dvToast('Share unavailable')}}
 async function dvPin(f){if(!await dvGuard(f))return;const p=await dvAsk({title:f.pin?'Change PIN':'Set PIN',msg:'Use 4 digits'+(f.pin?'. Leave empty to remove.':''),input:1,type:'password',mode:'numeric',max:4,ok:'Save'});if(p===null)return;if(p===''&&f.pin)f.pin='';else if(/^\d{4}$/.test(p))f.pin=await dvHash(p);else return dvToast('PIN must be 4 digits');dvPinMem[dvSlugOf(f)]=p;await dvDB.put(f);dvFiles();dvToast(f.pin?'PIN saved':'PIN removed')}
 const dvName=n=>{n=n.trim();return /\.txt$/i.test(n)?n:n+'.txt'};
@@ -58,6 +63,11 @@ async function dvKey(pin,salt){const m=await crypto.subtle.importKey('raw',new T
 async function dvMakeLink(f,pin){let z=await dvZip(new TextEncoder().encode(JSON.stringify({n:f.name,t:f.code})),true),tag='p';
 if(f.pin){const s=crypto.getRandomValues(new Uint8Array(16)),i=crypto.getRandomValues(new Uint8Array(12)),k=await dvKey(pin,s),c=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:i},k,z)),all=new Uint8Array(28+c.length);all.set(s,0);all.set(i,16);all.set(c,28);z=all;tag='e'}
 return location.origin+dvBase+'#'+encodeURIComponent(dvSlugOf(f))+'~'+tag+dvB64u(z)}
+function dvJsonp(q){return new Promise((ok,no)=>{const n='dvCb'+Date.now(),s=document.createElement('script'),clean=()=>{clearTimeout(t);delete window[n];s.remove()},t=setTimeout(()=>{clean();no(new Error('timeout'))},12000);window[n]=o=>{clean();ok(o)};s.onerror=()=>{clean();no(new Error('net'))};s.src=q+'&callback='+n;document.head.appendChild(s)})}
+async function dvShortCall(long,alias){const q='https://is.gd/create.php?format=json&url='+encodeURIComponent(long)+(alias?'&shorturl='+encodeURIComponent(alias):'');try{return await (await fetch(q)).json()}catch(e){return dvJsonp(q)}}
+const dvAlias=s=>{const a=s.replace(/[^A-Za-z0-9_]/g,'_').slice(0,26);return a.length>=5?a:''};
+async function dvMakeShort(long,slug){const a=dvAlias(slug),tries=a?[a,a.slice(0,21)+'_'+Math.random().toString(36).slice(2,6),'']:[''];
+for(const al of tries){const o=await dvShortCall(long,al);if(o&&o.shorturl)return o.shorturl;if(!o||o.errorcode!==2)throw new Error('short')}throw new Error('short')}
 async function dvOpenShared(slug,pl,rp){try{let b=dvUnb64u(pl.slice(1));
 if(pl[0]==='e'){for(;;){const pin=await dvAsk({title:'Enter PIN',msg:'This note is locked.',input:1,type:'password',mode:'numeric',max:4,ok:'Unlock'});if(pin===null){dvShow('home');return}
 try{const k=await dvKey(pin,b.slice(0,16));b=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(16,28)},k,b.slice(28)));break}catch(e){dvToast('Wrong PIN')}}}
