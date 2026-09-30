@@ -40,29 +40,31 @@ if(btn.dataset.dvopen)return dvEditFile(f);
 dvPop(btn,[ ['Rename','edit',()=>dvRename(f)],['Edit','note',()=>dvEditFile(f)],['Delete','delete',()=>dvDelFile(f)],['Share','share',()=>dvShareFile(f)],['PIN','lock',()=>dvPin(f)],['Exit','close',()=>{}] ])}
 async function dvEditFile(f){if(await dvGuard(f))dvOpenEd(f)}
 async function dvRename(f){if(!await dvGuard(f))return;const n=await dvAsk({title:'Rename File',input:1,value:f.name,ok:'Rename'});if(n===null||!n.trim())return;f.name=dvName(n);await dvDB.put(f);dvFiles();dvToast('Renamed')}
-async function dvDelFile(f){if(!await dvGuard(f))return;if(!await dvAsk({title:'Delete file?',msg:f.name,ok:'Delete'}))return;if(f.cloud&&dvCloud())fetch(dvCloud()+'/notes/'+dvSlugOf(f).toLowerCase()+'.json',{method:'DELETE'}).catch(()=>{});await dvDB.del(f.id);dvFiles();dvToast('Deleted')}
-async function dvShareFile(f){if(!await dvGuard(f))return;if(f.cloud&&dvCloud()){const l=location.origin+dvBase+'#'+encodeURIComponent(dvSlugOf(f));try{if(navigator.share)await navigator.share({title:f.name,url:l});else{await navigator.clipboard.writeText(l);dvToast('Link copied')}}catch(e){}}else dvShareText(f.name,f.code)}
+async function dvDelFile(f){if(!await dvGuard(f))return;if(!await dvAsk({title:'Delete file?',msg:f.name,ok:'Delete'}))return;await dvDB.del(f.id);dvFiles();dvToast('Deleted')}
+async function dvShareFile(f){const pin=await dvGuard(f);if(!pin)return;if(typeof CompressionStream==='undefined')return dvShareText(f.name,f.code);try{const l=await dvMakeLink(f,pin);if(navigator.share)await navigator.share({title:f.name,text:f.name,url:l});else{await navigator.clipboard.writeText(l);dvToast('Link copied')}}catch(e){if(e.name!=='AbortError')dvToast('Could not create the link')}}
 async function dvShareText(t,c){try{const file=new File([c],t,{type:'text/plain'});if(navigator.canShare&&navigator.canShare({files:[file]}))return await navigator.share({files:[file],title:t});if(navigator.share)return await navigator.share({title:t,text:c});await navigator.clipboard.writeText(c);dvToast('Copied to clipboard')}catch(e){if(e.name!=='AbortError')dvToast('Share unavailable')}}
-async function dvPin(f){if(!await dvGuard(f))return;const p=await dvAsk({title:f.pin?'Change PIN':'Set PIN',msg:'Use 4 digits'+(f.pin?'. Leave empty to remove.':''),input:1,type:'password',mode:'numeric',max:4,ok:'Save'});if(p===null)return;if(p===''&&f.pin)f.pin='';else if(/^\d{4}$/.test(p))f.pin=await dvHash(p);else return dvToast('PIN must be 4 digits');dvPinMem[dvSlugOf(f)]=p;await dvDB.put(f);if(f.cloud)dvCloudPut(f,p);dvFiles();dvToast(f.pin?'PIN saved':'PIN removed')}
+async function dvPin(f){if(!await dvGuard(f))return;const p=await dvAsk({title:f.pin?'Change PIN':'Set PIN',msg:'Use 4 digits'+(f.pin?'. Leave empty to remove.':''),input:1,type:'password',mode:'numeric',max:4,ok:'Save'});if(p===null)return;if(p===''&&f.pin)f.pin='';else if(/^\d{4}$/.test(p))f.pin=await dvHash(p);else return dvToast('PIN must be 4 digits');dvPinMem[dvSlugOf(f)]=p;await dvDB.put(f);dvFiles();dvToast(f.pin?'PIN saved':'PIN removed')}
 const dvName=n=>{n=n.trim();return /\.txt$/i.test(n)?n:n+'.txt'};
 /* Note links and sharing */
 const dvPinMem={};
-const dvCloud=()=>String(window.DV_CLOUD_URL||'').replace(/\/$/,'');
 const dvSlugOf=f=>f.slug||('note-'+f.id);
 const dvSlugBase=t=>t.replace(/\.txt$/i,'').replace(/[^\p{L}\p{N}_-]/gu,'')||'note';
-async function dvUniqueSlug(t,id){const base=dvSlugBase(t),all=await dvDB.all(),used=new Set(all.filter(x=>x.id!==id).map(x=>dvSlugOf(x).toLowerCase()));[...dvRoutes,'notepad','new','editor'].forEach(x=>used.add(x));let s=base,n=2;while(used.has(s.toLowerCase())||(dvCloud()&&await dvCloudGet(s))){s=base+'-'+n++}return s}
+async function dvUniqueSlug(t,id){const base=dvSlugBase(t),all=await dvDB.all(),used=new Set(all.filter(x=>x.id!==id).map(x=>dvSlugOf(x).toLowerCase()));[...dvRoutes,'notepad','new','editor'].forEach(x=>used.add(x));let s=base,n=2;while(used.has(s.toLowerCase())){s=base+'-'+n++}return s}
 const dvB64=b=>{let s='';new Uint8Array(b).forEach(x=>{s+=String.fromCharCode(x)});return btoa(s)};
-const dvUn=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const dvB64u=b=>dvB64(b).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const dvUnb64u=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+async function dvZip(u8,pack){const cs=pack?new CompressionStream('deflate'):new DecompressionStream('deflate'),w=cs.writable.getWriter();w.write(u8);w.close();return new Uint8Array(await new Response(cs.readable).arrayBuffer())}
 async function dvKey(pin,salt){const m=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:100000,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
-async function dvEnc(t,pin){const s=crypto.getRandomValues(new Uint8Array(16)),i=crypto.getRandomValues(new Uint8Array(12)),k=await dvKey(pin,s),d=await crypto.subtle.encrypt({name:'AES-GCM',iv:i},k,new TextEncoder().encode(t));return{s:dvB64(s),i:dvB64(i),d:dvB64(d)}}
-async function dvDec(o,pin){const k=await dvKey(pin,dvUn(o.s));return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:dvUn(o.i)},k,dvUn(o.d)))}
-async function dvCloudGet(s){const u=dvCloud();if(!u)return null;try{const r=await fetch(u+'/notes/'+encodeURIComponent(s.toLowerCase())+'.json');if(!r.ok)return null;const o=await r.json();if(!o)return null;return{slug:o.slug||s,name:o.name||s,pin:o.pin||'',code:o.text||'',encd:o.enc||null,updated:o.updated||0,cloud:true}}catch(e){return null}}
-async function dvCloudPut(f,pin){const u=dvCloud();if(!u)return false;try{const o={slug:f.slug,name:f.name,updated:f.updated,pin:f.pin||''};if(f.pin)o.enc=await dvEnc(f.code,pin);else o.text=f.code;const r=await fetch(u+'/notes/'+encodeURIComponent(f.slug.toLowerCase())+'.json',{method:'PUT',body:JSON.stringify(o)});return r.ok}catch(e){return false}}
-async function dvOpenSlug(s,rp){const all=await dvDB.all();let f=all.find(x=>dvSlugOf(x).toLowerCase()===s.toLowerCase());if(!f)f=await dvCloudGet(s);
-if(!f){dvToast('Note not found');dvShow('home');return}
-const ok=await dvGuard(f);if(!ok){dvShow('home');return}
-if(f.encd){try{f.code=await dvDec(f.encd,ok)}catch(e){dvToast('Could not unlock this note');dvShow('home');return}}
-dvOpenEd(f,'','',rp)}
+async function dvMakeLink(f,pin){let z=await dvZip(new TextEncoder().encode(JSON.stringify({n:f.name,t:f.code})),true),tag='p';
+if(f.pin){const s=crypto.getRandomValues(new Uint8Array(16)),i=crypto.getRandomValues(new Uint8Array(12)),k=await dvKey(pin,s),c=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:i},k,z)),all=new Uint8Array(28+c.length);all.set(s,0);all.set(i,16);all.set(c,28);z=all;tag='e'}
+return location.origin+dvBase+'#'+encodeURIComponent(dvSlugOf(f))+'~'+tag+dvB64u(z)}
+async function dvOpenShared(slug,pl,rp){try{let b=dvUnb64u(pl.slice(1));
+if(pl[0]==='e'){for(;;){const pin=await dvAsk({title:'Enter PIN',msg:'This note is locked.',input:1,type:'password',mode:'numeric',max:4,ok:'Unlock'});if(pin===null){dvShow('home');return}
+try{const k=await dvKey(pin,b.slice(0,16));b=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(16,28)},k,b.slice(28)));break}catch(e){dvToast('Wrong PIN')}}}
+const o=JSON.parse(new TextDecoder().decode(await dvZip(b,false)));dvOpenEd(null,o.n,o.t,rp);history.replaceState({v:'editor'},'',dvBase+'#'+encodeURIComponent(slug)+'~'+pl)}catch(e){dvToast('This note link is not valid');dvShow('home')}}
+async function dvOpenSlug(p,rp){const i=p.indexOf('~');if(i>0)return dvOpenShared(p.slice(0,i),p.slice(i+1),rp);const all=await dvDB.all(),f=all.find(x=>dvSlugOf(x).toLowerCase()===p.toLowerCase());
+if(!f){dvToast('Note not found on this device. Ask for the full link.');dvShow('home');return}
+if(!await dvGuard(f)){dvShow('home');return}dvOpenEd(f,'','',rp)}
 /* Bible reader */
 const dvKjvUrls=['https://raw.githubusercontent.com/thiagobodruk/bible/master/json/en_kjv.json','https://cdn.jsdelivr.net/gh/thiagobodruk/bible@master/json/en_kjv.json'];
 function dvClean(v){return String(v).replace(/\{[HG]\d+\}/g,'').replace(/[{}]/g,'').replace(/<[^>]*>/g,'').replace(/\u00B6/g,'').replace(/\[/g,'').replace(/\]/g,'').replace(/\b[HG]\d{1,4}\b/g,'').replace(/\s+/g,' ').trim()}
@@ -75,7 +77,7 @@ function dvBibleFind(q){q=q.trim().toLowerCase();if(q.length<3){dvBibleShow();re
 async function dvBibleGet(){const st=dvQ('#dvBMsg'),btn=dvQ('#dvBGo');btn.disabled=true;document.body.classList.add('dvBusy');st.textContent='Downloading the Bible...';let d=null;for(const u of dvKjvUrls){try{const r=await fetch(u);if(!r.ok)throw new Error('x');d=JSON.parse((await r.text()).replace(/^\uFEFF/,''));break}catch(e){}}
 if(!d)st.textContent='The Bible could not be downloaded. Please check your internet connection and try again.';else{st.textContent='Preparing the Bible...';await new Promise(r=>setTimeout(r,30));dvBData=d.map(b=>({n:b.name,c:b.chapters.map(ch=>ch.map(dvClean))}));try{await dvDB.putB('kjv',dvBData)}catch(e){}st.textContent='';dvBibleOpen()}
 btn.disabled=false;document.body.classList.remove('dvBusy')}
-(function(){const z=Math.max(22,+localStorage.dvNbFont||22);document.documentElement.style.setProperty('--dvBs',z+'px');dvQ('#dvBSize').value=z;
+(function(){const z=Math.min(27,Math.max(23,+localStorage.dvNbFont||23));document.documentElement.style.setProperty('--dvBs',z+'px');dvQ('#dvBSize').value=z;
 dvQ('#dvBSize').oninput=e=>{document.documentElement.style.setProperty('--dvBs',e.target.value+'px');localStorage.dvNbFont=e.target.value};
 dvQ('#dvBBook').onchange=()=>dvBibleChapters(+dvQ('#dvBBook').value,0);dvQ('#dvBCh').onchange=dvBibleShow;
 dvQ('#dvBFind').oninput=e=>{clearTimeout(dvBSrch);dvBSrch=setTimeout(()=>dvBibleFind(e.target.value),300)};
@@ -93,9 +95,8 @@ dvCode.addEventListener('input',()=>{clearTimeout(dvH.t);dvH.t=setTimeout(dvPush
 dvCode.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();dvCode.setRangeText('  ',dvCode.selectionStart,dvCode.selectionEnd,'end');dvCode.dispatchEvent(new Event('input'))}});
 function dvSet(v){dvCode.value=v}
 async function dvTool(t){const c=dvSettings.get();switch(t){
-case 'save':{const n=await dvAsk({title:'Save Note',msg:'File title',input:1,value:dvEdName,ok:'Save'});if(n===null)return;if(!n.trim())return dvToast('Enter a title');const r=Object.assign({pin:''},dvRec||{},{name:dvName(n),code:dvCode.value,updated:Date.now()});delete r.encd;if(!r.slug)r.slug=await dvUniqueSlug(n,r.id);r.id=await dvDB.put(r);dvRec=r;dvEdName=r.name;history.replaceState({v:'editor'},'',dvBase+'#'+encodeURIComponent(r.slug));dvQ('#dvEdName').textContent=r.name;
-if(dvCloud()){let pin='';if(r.pin){pin=dvPinMem[r.slug]||await dvAsk({title:'Enter PIN',msg:'Needed to lock the shared note',input:1,type:'password',mode:'numeric',max:4,ok:'OK'});if(pin&&await dvHash(pin)!==r.pin)pin=null;if(!pin){dvToast('Saved on this device only');break}}
-r.cloud=await dvCloudPut(r,pin);await dvDB.put(r);dvToast(r.cloud?'Saved and shared':'Saved on this device only')}else dvToast('Saved');break}
+case 'save':{const n=await dvAsk({title:'Save Note',msg:'File title',input:1,value:dvEdName,ok:'Save'});if(n===null)return;if(!n.trim())return dvToast('Enter a title');const r=Object.assign({pin:''},dvRec||{},{name:dvName(n),code:dvCode.value,updated:Date.now()});if(!r.slug)r.slug=await dvUniqueSlug(n,r.id);r.id=await dvDB.put(r);dvRec=r;dvEdName=r.name;history.replaceState({v:'editor'},'',dvBase+'#'+encodeURIComponent(r.slug));dvQ('#dvEdName').textContent=r.name;
+dvToast('Saved');break}
 case 'undo':dvPush();if(dvH.u.length>1){dvH.r.push(dvH.u.pop());dvSet(dvH.u[dvH.u.length-1])}break;
 case 'redo':if(dvH.r.length){const v=dvH.r.pop();dvH.u.push(v);dvSet(v)}break;
 case 'copy':try{await navigator.clipboard.writeText(dvCode.value.slice(dvCode.selectionStart,dvCode.selectionEnd)||dvCode.value);dvToast('Copied')}catch(e){dvToast('Clipboard unavailable')}break;
