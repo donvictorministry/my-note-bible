@@ -33,12 +33,12 @@ body.dvSub #dvBar{display:none}
 .dvCard{display:flex;align-items:center;background:var(--dvCard);border:1px solid var(--dvBd);border-radius:16px;padding:6px 2px 6px 12px;gap:8px;min-width:0}
 .dvCardMain{flex:1;min-width:0;display:flex;align-items:center;gap:10px;min-height:56px}
 .dvCardMain div{min-width:0}.dvCardMain b,.dvCardMain small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dvCardMain small{font-size:18px;color:var(--dvMut)}
+.dvCardMain small{font-size:19px;color:var(--dvMut)}
 .dvEmpty{padding:30px 10px;text-align:center;color:var(--dvMut)}
 .dvFab{position:absolute;right:16px;bottom:16px;width:72px;height:72px;border:0;border-radius:24px;background:var(--dvG);display:grid;place-items:center;box-shadow:0 6px 16px rgba(24,119,242,.45)}
 .dvFab .dvIco{width:34px;height:34px}.dvFab:active{transform:scale(.94)}
 #dvNav{flex:none;height:auto;min-height:72px;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--dvBd);background:var(--dvBg);padding-bottom:env(safe-area-inset-bottom)}
-#dvNav button{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:18px;padding:6px 0}
+#dvNav button{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:19px;padding:6px 0}
 .dvNi{width:64px;height:32px;border-radius:16px;display:grid;place-items:center}
 #dvNav .dvAct{color:var(--dvA);font-weight:500}#dvNav .dvAct .dvNi{background:var(--dvG)}
 .dvDrawer{position:fixed;top:0;bottom:0;width:100dvw;background:var(--dvBg);z-index:50;visibility:hidden;transition:transform .25s,visibility 0s .25s;overflow-y:auto}
@@ -65,10 +65,10 @@ textarea.dvInput{min-height:140px;resize:none;margin:10px 0}
 .dvFull.dvOn{display:flex}.dvFull .dvPageHead{margin:0}
 .dvTools{display:flex;overflow-x:auto;flex:none;border-bottom:2px solid var(--dvBd);scrollbar-width:none}
 .dvTools::-webkit-scrollbar{display:none}
-.dvTB{flex:none;min-width:76px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;font-size:18px;color:var(--dvFg)}
+.dvTB{flex:none;min-width:76px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;font-size:19px;color:var(--dvFg)}
 .dvTB.dvAct{color:var(--dvA);font-weight:500}
 #dvEdWrap{flex:1;display:flex;min-height:0;position:relative;overflow:hidden}
-#dvCode{font-family:Roboto,sans-serif;font-size:25px;line-height:36px;padding:12px 8px}
+#dvCode{font-family:Roboto,sans-serif;font-size:26px;line-height:38px;padding:12px 8px}
 #dvCode{flex:1;min-width:0;border:0;outline:0;resize:none;background:var(--dvBg);color:var(--dvFg);tab-size:2;white-space:pre;overflow:auto}
 #dvCode.dvWrap{white-space:pre-wrap}
 .dvPop{position:fixed;z-index:60;min-width:210px;background:var(--dvBg);border:1px solid var(--dvBd);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:6px 0;overflow:hidden}
@@ -100,7 +100,7 @@ textarea.dvInput{min-height:140px;resize:none;margin:10px 0}
 #dvBSize{flex:1;min-width:60px;accent-color:#1877F2}
 .dvBRow .dvSearch{flex:1.4;min-width:0}
 #dvBText{flex:1;overflow-y:auto;background:var(--dvCard);border:1px solid var(--dvBd);border-radius:14px;padding:10px 14px}
-.dvVs{font-size:var(--dvBs,22px);line-height:1.7;margin:6px 0}
+.dvVs{font-size:var(--dvBs,23px);line-height:1.7;margin:6px 0}
 .dvVs b{color:var(--dvA)}
 .dvMore{width:100%;margin:12px 0}
 .dvBSel,.dvBSel option{font-size:19px}
