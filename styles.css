@@ -1,4 +1,3 @@
-
 :root{--dvA:#1877F2;--dvG:linear-gradient(135deg,#42A5FF,#1877F2 55%,#0A4FC4);--dvBg:#fff;--dvFg:#000;--dvCard:#F0F4FA;--dvBd:#C9D6EE;--dvMut:#4A5568}
 [data-dvtheme=dark]{--dvBg:#0E1116;--dvFg:#F1F4F9;--dvCard:#1A2029;--dvBd:#2E3A4E;--dvMut:#A6B2C6}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:Roboto,sans-serif}
@@ -38,11 +37,6 @@ body.dvSub #dvBar{display:none}
 .dvEmpty{padding:30px 10px;text-align:center;color:var(--dvMut)}
 .dvFab{position:absolute;right:16px;bottom:16px;width:72px;height:72px;border:0;border-radius:24px;background:var(--dvG);display:grid;place-items:center;box-shadow:0 6px 16px rgba(24,119,242,.45)}
 .dvFab .dvIco{width:34px;height:34px}.dvFab:active{transform:scale(.94)}
-.dvOut{flex:1;overflow-y:auto;background:var(--dvCard);border:1px solid var(--dvBd);border-radius:14px;padding:8px;font-family:monospace;min-height:0}
-.dvOut *{font-family:monospace}
-.dvLine{padding:6px 4px;border-bottom:1px solid var(--dvBd);white-space:pre-wrap;word-break:break-word}
-.dvL-error{color:#D93025}.dvL-warn{color:#B26A00}.dvL-info,.dvL-sys{color:var(--dvA)}
-[data-dvtheme=dark] .dvL-error{color:#FF8A80}[data-dvtheme=dark] .dvL-warn{color:#FFC061}
 #dvNav{flex:none;height:auto;min-height:72px;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--dvBd);background:var(--dvBg);padding-bottom:env(safe-area-inset-bottom)}
 #dvNav button{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:18px;padding:6px 0}
 .dvNi{width:64px;height:32px;border-radius:16px;display:grid;place-items:center}
@@ -74,14 +68,9 @@ textarea.dvInput{min-height:140px;resize:none;margin:10px 0}
 .dvTB{flex:none;min-width:76px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:none;font-size:18px;color:var(--dvFg)}
 .dvTB.dvAct{color:var(--dvA);font-weight:500}
 #dvEdWrap{flex:1;display:flex;min-height:0;position:relative;overflow:hidden}
-#dvGut,#dvCode{font-family:monospace;font-size:19px;line-height:28px;padding:12px 8px}
-#dvGut{flex:none;min-width:3.2em;text-align:right;color:var(--dvMut);background:var(--dvCard);overflow:hidden;border-right:1px solid var(--dvBd);user-select:none}
-#dvGut.dvHide{display:none}
+#dvCode{font-family:Roboto,sans-serif;font-size:25px;line-height:36px;padding:12px 8px}
 #dvCode{flex:1;min-width:0;border:0;outline:0;resize:none;background:var(--dvBg);color:var(--dvFg);tab-size:2;white-space:pre;overflow:auto}
 #dvCode.dvWrap{white-space:pre-wrap}
-.dvSheet{position:absolute;left:0;right:0;bottom:0;height:48%;background:var(--dvBg);border-top:3px solid var(--dvA);display:flex;flex-direction:column;transform:translateY(100%);visibility:hidden;transition:transform .25s,visibility 0s .25s;padding:0 8px 8px}
-.dvSheet.dvOpen{transform:none;visibility:visible;transition:transform .25s}
-.dvSheetHead{display:flex;align-items:center;height:52px;flex:none}
 .dvPop{position:fixed;z-index:60;min-width:210px;background:var(--dvBg);border:1px solid var(--dvBd);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:6px 0;overflow:hidden}
 .dvPop .dvItem{border-radius:0;min-height:52px}
 #dvModal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);display:none;place-items:center}
@@ -93,7 +82,6 @@ textarea.dvInput{min-height:140px;resize:none;margin:10px 0}
 
 .dvLogo{flex:none;display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#FFF8D6,#F5DC85 65%,#E8C560);color:#D32F2F;font-weight:700;font-size:19px;box-shadow:0 1px 4px rgba(0,0,0,.35);margin:0 8px 0 4px}
 .dvLogoL{width:52px;height:52px;font-size:26px;vertical-align:middle;margin:0 8px 0 0}
-.dvBtnRow{display:flex;gap:8px;flex-wrap:wrap;flex:none;padding-bottom:8px}
 
 .dvLogo{position:relative;margin:0 12px 0 8px}.dvLogoL{margin:0 16px 0 8px}
 .dvLogo::before{content:"";position:absolute;inset:-6px;border:3px dashed #9AD1FF;border-radius:50%;animation:dvSpin 6s linear infinite;pointer-events:none}
@@ -102,8 +90,6 @@ textarea.dvInput{min-height:140px;resize:none;margin:10px 0}
 @keyframes dvSpin{to{transform:rotate(360deg)}}
 @keyframes dvPulse{50%{transform:scale(1.1)}}
 @media (prefers-reduced-motion:reduce){.dvLogo,.dvLogo::before{animation:none!important}}
-#dvGut,#dvCode{font-size:24px;line-height:34px}
-#dvConOut2,#dvConOut2 .dvLine{font-size:22px;line-height:1.5}
 
 [hidden]{display:none!important}
 #dvBRead{flex:1;display:flex;flex-direction:column;min-height:0}
@@ -118,3 +104,8 @@ textarea.dvInput{min-height:140px;resize:none;margin:10px 0}
 .dvVs b{color:var(--dvA)}
 .dvMore{width:100%;margin:12px 0}
 .dvBSel,.dvBSel option{font-size:19px}
+
+.dvSaveBtn{flex:none;height:48px;margin-right:8px;padding:0 18px;border:0;border-radius:24px;background:#FFD700;color:#F00;font-weight:700;font-size:22px;display:flex;align-items:center;gap:8px}
+.dvSaveBtn .dvIco{fill:#F00}
+.dvSaveBtn:active{filter:brightness(.9);transform:scale(.96)}
+.dvFull .dvPageHead h2{flex:1;text-align:center}
