@@ -1,0 +1,3 @@
+window.DV_CONTACT={email:'support@example.com'};
+window.dvContactUs=function(){return '<div class="dvBox"><h3>Send us a message</h3><input class="dvInput" id="dvCtSub" placeholder="Subject"><textarea class="dvInput" id="dvCtMsg" placeholder="Your message"></textarea><button class="dvBtn" id="dvCtSend" style="width:100%">Send</button></div>'};
+window.dvContactBind=function(dvToast){var b=document.getElementById('dvCtSend');if(!b)return;b.onclick=function(){var s=document.getElementById('dvCtSub').value.trim(),m=document.getElementById('dvCtMsg').value.trim();if(!m)return dvToast('Write a message first');location.href='mailto:'+DV_CONTACT.email+'?subject='+encodeURIComponent(s||'dv NOTE & BIBLE')+'&body='+encodeURIComponent(m)}};
