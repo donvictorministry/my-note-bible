@@ -1,4 +1,3 @@
-
 (() => {
   'use strict';
 
@@ -147,6 +146,17 @@
     qaContainer.appendChild(btn);
   };
 
+  const dvCloseVerseModal = () => {
+    const modal = document.getElementById('dv-daily-verse-modal');
+    if (!modal) return;
+    modal.id = '';
+    const dvNavBtn = document.getElementById('dv-nav-daily-verse');
+    if (dvNavBtn) dvNavBtn.classList.remove('dvAct');
+    (modal.dvPrev || []).forEach(x => x.classList.add('dvAct'));
+    modal.style.opacity = '0';
+    setTimeout(() => modal.remove(), 300);
+  };
+
   // ==========================================
   // UI: BOTTOM NAVIGATION BUTTON (4th button)
   // ==========================================
@@ -160,6 +170,13 @@
     btn.onclick = openVerseModal;
     nav.appendChild(btn);
     nav.style.gridTemplateColumns = 'repeat(4,1fr)';
+    const st = document.createElement('style');
+    st.textContent = '#dvNav .dvAct .dvIco{stroke:#fff}';
+    document.head.appendChild(st);
+    nav.addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (b && b.id !== 'dv-nav-daily-verse') dvCloseVerseModal();
+    }, true);
   };
 
   // ==========================================
@@ -208,7 +225,7 @@
 
     const modal = document.createElement('div');
     modal.id = 'dv-daily-verse-modal';
-    modal.style.cssText = `position:fixed;top:0;left:0;width:100dvw;height:100dvh;background:var(--dvBg,#fff);color:var(--dvFg,#000);z-index:999999;display:flex;flex-direction:column;opacity:0;transition:opacity 0.3s ease;font-family:inherit;`;
+    modal.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:${(document.getElementById('dvNav')||{}).offsetHeight||0}px;background:var(--dvBg,#fff);color:var(--dvFg,#000);z-index:999999;display:flex;flex-direction:column;opacity:0;transition:opacity 0.3s ease;font-family:inherit;`;
 
     // 1. Header (Facebook Blue)
     const topBar = document.createElement('div');
@@ -218,16 +235,6 @@
     headerTitle.textContent = 'DV Daily Bible Verse';
     headerTitle.style.cssText = 'color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:0.5px;';
     
-    const closeBtn = document.createElement('button');
-    closeBtn.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="M15 18l-6-6 6-6"/></svg>';
-    closeBtn.style.cssText = 'position:absolute;left:4px;background:none;border:none;cursor:pointer;padding:12px;display:flex;align-items:center;justify-content:center;';
-    
-    closeBtn.onclick = () => {
-      modal.style.opacity = '0';
-      setTimeout(() => modal.remove(), 300);
-    };
-    
-    topBar.appendChild(closeBtn);
     topBar.appendChild(headerTitle);
 
     // 2. Body Container
@@ -257,18 +264,18 @@
     const shareContainer = document.createElement('div');
     shareContainer.style.cssText = 'display:flex;gap:16px;justify-content:center;margin-top:24px;padding-bottom:32px;border-bottom:1px solid rgba(128,128,128,0.2);width:100%;';
 
-    const buildShareBtn = (bg, svg, action) => {
+    const buildShareBtn = (bg, svg, label, action) => {
       const btn = document.createElement('button');
-      btn.style.cssText = `width:56px;height:56px;border-radius:50%;background:${bg};border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,0.15);`;
-      btn.innerHTML = svg;
+      btn.style.cssText = `height:60px;padding:0 36px;border-radius:30px;background:${bg};color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:14px;font-size:22px;font-weight:bold;box-shadow:0 6px 14px rgba(0,0,0,0.2);`;
+      btn.innerHTML = `${svg}<span>${label}</span>`;
       btn.onclick = action;
       return btn;
     };
 
-    const svgNative = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';
+    const svgNative = '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';
 
     if (navigator.share) {
-      shareContainer.appendChild(buildShareBtn('linear-gradient(135deg,#42A5FF,#1877F2 55%,#0A4FC4)', svgNative, () => navigator.share({ title: 'Verse of the Day', text: shareText })));
+      shareContainer.appendChild(buildShareBtn('#1877f2', svgNative, 'Share today daily verse', () => navigator.share({ title: 'Verse of the Day', text: shareText })));
     }
 
     // 4. Footer Contact Row
@@ -320,6 +327,12 @@
 
     modal.appendChild(topBar);
     modal.appendChild(scrollBody);
+    const dvNavBtn = document.getElementById('dv-nav-daily-verse');
+    if (dvNavBtn) {
+      modal.dvPrev = [...document.querySelectorAll('#dvNav .dvAct')];
+      modal.dvPrev.forEach(x => x.classList.remove('dvAct'));
+      dvNavBtn.classList.add('dvAct');
+    }
     document.body.appendChild(modal);
 
     requestAnimationFrame(() => {
