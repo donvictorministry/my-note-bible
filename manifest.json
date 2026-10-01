@@ -1,1 +1,62 @@
-{"name":"DV Note & Bible","short_name":"DV Note & Bible","description":"Offline notepad and King James Bible cleaner","start_url":"./index.html","scope":"./","display":"standalone","orientation":"any","background_color":"#ffffff","theme_color":"#1877F2","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%23F5DC85'/%3E%3Ctext x='256' y='335' font-size='230' font-weight='700' text-anchor='middle' fill='%23D32F2F' font-family='Roboto,Arial,sans-serif'%3Edv%3C/text%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml","purpose":"any"}]}
+{
+  "name": "DV Note & Bible",
+  "short_name": "DV Note & Bible",
+  "description": "Offline notepad and King James Bible cleaner",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#1877F2",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "id": "./",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": [
+    "books",
+    "education",
+    "productivity"
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/home.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Home with quick actions"
+    },
+    {
+      "src": "screenshots/notes.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Your saved notes"
+    },
+    {
+      "src": "screenshots/bible.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Read the King James Bible"
+    }
+  ]
+}
