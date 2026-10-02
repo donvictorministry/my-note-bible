@@ -14,9 +14,8 @@
     const pin = await T.guard(f);
     if (!pin) return null;
     const link = await T.makeLink(f, pin);
-    const title = f.name.replace(/\.txt$/i, '');
     if (link.length > 1800) T.toast('This is a long note, so the link is long. WhatsApp handles long links best.', 3500);
-    return title + (f.pin ? ' (PIN needed)' : '') + '\n' + link;
+    return link;
   };
 
   const openUrl = (url, newTab) => {
