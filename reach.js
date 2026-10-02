@@ -99,62 +99,7 @@
   };
 
   // ==========================================
-  // B. SHARED NOTE BECOMES AN INVITATION (clean reading view)
-  // ==========================================
-  T.reader = (o) => {
-    const old = document.getElementById('dv-reader');
-    if (old) old.remove();
-    const installed = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
-
-    const wrap = document.createElement('div');
-    wrap.id = 'dv-reader';
-    wrap.style.cssText = 'position:fixed;inset:0;z-index:60;background:var(--dvBg,#fff);color:var(--dvFg,#000);display:flex;flex-direction:column;';
-
-    const head = document.createElement('div');
-    head.style.cssText = 'flex:none;height:64px;display:flex;align-items:center;justify-content:center;gap:12px;background:' + GRAD + ';color:#fff;font-size:22px;font-weight:bold;';
-    const badge = document.createElement('span');
-    badge.textContent = 'dv';
-    badge.style.cssText = 'width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%,#FFF8D6,#F5DC85 65%,#E8C560);color:#D32F2F;font-size:20px;font-weight:bold;';
-    const brand = document.createElement('span');
-    brand.textContent = 'DV Note & Bible';
-    head.appendChild(badge); head.appendChild(brand);
-
-    const body = document.createElement('div');
-    body.style.cssText = 'flex:1;overflow-y:auto;padding:24px 18px;';
-    const title = document.createElement('h2');
-    title.textContent = (o.name || 'Shared note').replace(/\.txt$/i, '');
-    title.style.cssText = 'font-size:26px;margin:0 0 16px;color:#1877F2;word-break:break-word;';
-    const text = document.createElement('div');
-    text.textContent = o.text || '';
-    text.style.cssText = 'font-size:26px;line-height:1.55;white-space:pre-wrap;word-break:break-word;';
-    body.appendChild(title); body.appendChild(text);
-
-    const foot = document.createElement('div');
-    foot.style.cssText = 'flex:none;padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid rgba(128,128,128,0.3);display:flex;flex-direction:column;gap:10px;';
-    const pitch = document.createElement('div');
-    pitch.textContent = 'Shared with DV Note & Bible: free notes and the King James Bible. No ads. Works offline.';
-    pitch.style.cssText = 'font-size:19px;text-align:center;opacity:0.85;';
-    foot.appendChild(pitch);
-
-    const btn = (label, primary, fn) => {
-      const b = document.createElement('button');
-      b.textContent = label;
-      b.style.cssText = 'height:56px;border-radius:28px;font-size:21px;font-weight:bold;cursor:pointer;' +
-        (primary ? 'border:none;color:#fff;background:' + GRAD + ';' : 'border:2px solid #1877F2;color:#1877F2;background:transparent;');
-      b.onclick = fn;
-      return b;
-    };
-    const close = () => wrap.remove();
-    if (!installed) foot.appendChild(btn('Get DV Note & Bible', true, () => { if (T.install) T.install(); }));
-    foot.appendChild(btn('Edit this note', installed, () => { close(); if (o.edit) o.edit(); }));
-    foot.appendChild(btn('Open the app', false, close));
-
-    wrap.appendChild(head); wrap.appendChild(body); wrap.appendChild(foot);
-    document.body.appendChild(wrap);
-  };
-
-  // ==========================================
-  // C. SHARE ANY VERSE FROM THE BIBLE READER
+  // B. SHARE ANY VERSE FROM THE BIBLE READER
   // ==========================================
   let selected = null;
   let bar = null;
