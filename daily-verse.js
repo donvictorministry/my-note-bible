@@ -8,7 +8,7 @@
     isActive: true,
     
     // Developer name printed on the shareable Verse of the Day picture as "By ..." (leave empty to hide it)
-    developer: '',
+    developer: 'By. Rev. Don Victor, PhD',
 
     // App URL for Sharing
     appUrl: location.origin + location.pathname.replace(/[^/]*$/, ''),
