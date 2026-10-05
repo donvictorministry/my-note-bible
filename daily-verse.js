@@ -87,6 +87,7 @@
 
   const LAST_OPENED_KEY = 'dv_daily_verse_last_opened';
   const STREAK_KEY = 'dv_daily_verse_streak';
+  const DISMISSED_KEY = 'dv_daily_verse_dismissed';
   const MS_IN_DAY = 24 * 60 * 60 * 1000;
 
   // Brand icons (no emojis)
@@ -98,6 +99,7 @@
   // STREAK & TIMING LOGIC
   // ==========================================
   const getTodayIndex = () => Math.floor(Date.now() / MS_IN_DAY) % 60;
+
   
   const handleStreakUpdate = () => {
     const now = Date.now();
@@ -127,7 +129,9 @@
   const shouldShowPopup = () => {
     const lastOpened = parseInt(localStorage.getItem(LAST_OPENED_KEY) || '0', 10);
     const hoursSince = (Date.now() - lastOpened) / (1000 * 60 * 60);
-    return hoursSince >= 24;
+    const dismissed = parseInt(localStorage.getItem(DISMISSED_KEY) || '0', 10);
+    const hoursDismissed = (Date.now() - dismissed) / (1000 * 60 * 60);
+    return hoursSince >= 24 && hoursDismissed >= 24;
   };
 
   // ==========================================
@@ -171,12 +175,16 @@
     nav.appendChild(btn);
     nav.style.gridTemplateColumns = 'repeat(4,1fr)';
     const st = document.createElement('style');
-    st.textContent = '#dvNav .dvAct .dvIco{stroke:#fff}';
+    st.textContent = '#dvNav .dvAct .dvIco{stroke:#fff}#dvLeft,#dvRight{z-index:1000000!important}';
     document.head.appendChild(st);
     nav.addEventListener('click', (e) => {
       const b = e.target.closest('button');
       if (b && b.id !== 'dv-nav-daily-verse') dvCloseVerseModal();
     }, true);
+    ['dvLeft', 'dvRight'].forEach((id) => {
+      const drawer = document.getElementById(id);
+      if (drawer) drawer.addEventListener('click', (e) => { if (e.target.closest('[data-dvgo]')) dvCloseVerseModal(); }, true);
+    });
   };
 
   // ==========================================
@@ -196,7 +204,6 @@
     const verseRef = CONFIG.verses[getTodayIndex()].ref;
     btn.innerHTML = `<span>Today's Verse of the Day</span><span style="font-size:19px;background:rgba(255,255,255,0.2);padding:6px 16px;border-radius:12px;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 16px;"><span style="display:inline-flex;align-items:center;gap:8px;white-space:nowrap;">${dvBookSvg} ${verseRef}</span><span style="display:inline-flex;align-items:center;gap:8px;white-space:nowrap;">${dvFlameSvg} ${getStreakDisplay()} Day Streak</span></span>`;
     
-    // Strictly no "X" to dismiss. User MUST tap to proceed.
     btn.onclick = () => {
 
       overlay.style.opacity = '0';
@@ -204,7 +211,22 @@
       openVerseModal();
     };
 
-    overlay.appendChild(btn);
+    // X to dismiss: anyone who does not want to read can close it. It returns after another 24 hours.
+    const closeX = document.createElement('button');
+    closeX.setAttribute('aria-label', 'Close');
+    closeX.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1877F2" stroke-width="3.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    closeX.style.cssText = 'position:absolute;top:-22px;right:-12px;width:48px;height:48px;border-radius:50%;background:#ffffff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.35);';
+    closeX.onclick = () => {
+      localStorage.setItem(DISMISSED_KEY, Date.now().toString());
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 300);
+    };
+
+    const card = document.createElement('div');
+    card.style.cssText = 'position:relative;max-width:92dvw;';
+    card.appendChild(btn);
+    card.appendChild(closeX);
+    overlay.appendChild(card);
     document.body.appendChild(overlay);
 
     requestAnimationFrame(() => {
@@ -235,6 +257,19 @@
     headerTitle.textContent = 'DV Daily Bible Verse';
     headerTitle.style.cssText = 'color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:0.5px;';
     
+    const dvHeadBtn = (label, path, side) => {
+      const b = document.createElement('button');
+      b.setAttribute('aria-label', label);
+      b.innerHTML = '<svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff"><path d="' + path + '"/></svg>';
+      b.style.cssText = 'position:absolute;top:8px;' + side + ':4px;width:48px;height:48px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+      return b;
+    };
+    const menuBtn = dvHeadBtn('Menu', 'M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z', 'left');
+    menuBtn.onclick = () => { const o = document.querySelector('[data-dvact="openl"]'); if (o) o.click(); };
+    const moreBtn = dvHeadBtn('More', 'M12 8a2 2 0 100-4 2 2 0 000 4zm0 2a2 2 0 100 4 2 2 0 000-4zm0 6a2 2 0 100 4 2 2 0 000-4z', 'right');
+    moreBtn.onclick = () => { const o = document.querySelector('[data-dvact="openr"]'); if (o) o.click(); };
+    topBar.appendChild(menuBtn);
+    topBar.appendChild(moreBtn);
     topBar.appendChild(headerTitle);
 
     // 2. Body Container
