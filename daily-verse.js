@@ -8,7 +8,7 @@
     isActive: true,
     
     // Developer name printed on the shareable Verse of the Day picture as "By ..." (leave empty to hide it)
-    developer: 'By. Rev. Don Victor, PhD',
+    developer: 'Rev. Don Victor, PhD',
 
     // App URL for Sharing
     appUrl: location.origin + location.pathname.replace(/[^/]*$/, ''),
@@ -392,12 +392,14 @@
         HTMLCanvasElement.prototype.toBlob = function (cb, type, q) {
           const x = this.getContext('2d');
           x.save();
-          x.fillStyle = '#ffffff';
-          x.globalAlpha = 0.95;
           x.textAlign = 'center';
           x.textBaseline = 'alphabetic';
-          x.font = '600 44px Roboto, "Helvetica Neue", Arial, sans-serif';
-          x.fillText('By ' + CONFIG.developer, this.width / 2, 596);
+          x.fillStyle = '#FFE08A';
+          x.font = 'bold 52px Roboto, "Helvetica Neue", Arial, sans-serif';
+          x.fillText('By. ' + CONFIG.developer, this.width / 2, 578);
+          x.fillStyle = '#ffffff';
+          x.globalAlpha = 0.35;
+          x.fillRect(this.width / 2 - 160, 604, 320, 4);
           x.restore();
           return nativeToBlob.call(this, cb, type, q);
         };
