@@ -7,6 +7,9 @@
   const CONFIG = {
     isActive: true,
     
+    // Developer name printed on the shareable Verse of the Day picture as "By ..." (leave empty to hide it)
+    developer: '',
+
     // App URL for Sharing
     appUrl: location.origin + location.pathname.replace(/[^/]*$/, ''),
 
@@ -379,6 +382,29 @@
       modal.style.opacity = '1';
     });
   };
+
+  // Prints "By <developer>" on the shareable Verse of the Day picture (under the heading, above the verse)
+  if (window.dvT && window.dvT.verseCard) {
+    const baseCard = window.dvT.verseCard;
+    window.dvT.verseCard = (ref, text, title) => {
+      const nativeToBlob = HTMLCanvasElement.prototype.toBlob;
+      if (CONFIG.developer && title === 'Verse of the Day') {
+        HTMLCanvasElement.prototype.toBlob = function (cb, type, q) {
+          const x = this.getContext('2d');
+          x.save();
+          x.fillStyle = '#ffffff';
+          x.globalAlpha = 0.95;
+          x.textAlign = 'center';
+          x.textBaseline = 'alphabetic';
+          x.font = '600 44px Roboto, "Helvetica Neue", Arial, sans-serif';
+          x.fillText('By ' + CONFIG.developer, this.width / 2, 596);
+          x.restore();
+          return nativeToBlob.call(this, cb, type, q);
+        };
+      }
+      try { return baseCard(ref, text, title); } finally { HTMLCanvasElement.prototype.toBlob = nativeToBlob; }
+    };
+  }
 
   // Safe Initialization
   if (document.readyState === 'loading') {
