@@ -5,13 +5,25 @@
   'use strict';
 
   var CONFIG = {
-    GAS_URL: 'https://script.google.com/macros/s/AKfycbz-qNyB6NJHLwwvOGmRbJxzXp0zDOPxoCNCcKIVnhwiNjUnyHOHe8joSy8Bqp_1OGut/exec',
-    APP_NAME: 'Ministry App',
+    // SWAP: paste your real Web app URL from Deploy > Manage deployments in Apps Script
+    GAS_URL: 'https://script.google.com/macros/s/AKfycbwbRU6wHuefxpx-6Vk3l40KoRaZl72xbapK8HKQh0Ha0zAEvTKICCe9WVMRyM4y8sEu/exec',
+    // SWAP: the name of the host app, shown at the top of the lock screens
+    APP_NAME: 'DV- Note & Bible',
+    // SWAP: admin WhatsApp number, digits only, with country code, no plus sign
     WHATSAPP: '15551234567',
+    // SWAP: admin Gmail address
     EMAIL: 'youradmin@gmail.com',
+    // SWAP: admin phone number, with plus and country code
     PHONE: '+15551234567',
+    // SWAP: full link to your Facebook page
     FACEBOOK: 'https://www.facebook.com/yourpage',
+    // SWAP: direct link to your circular ministry logo image (PNG or JPG, square)
+    LOGO_URL: 'https://yourname.github.io/logo.png',
+    // SWAP: the "Published Status" tab link: in the sheet use File > Share > Publish to web, pick that tab, choose CSV, copy the link
+    STATUS_CSV_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQxhAhz8zA9pZaFqT8wLp5Bm38iCg6oV_JkcI9fG52YFZ255aGKo-KWI5WGxsOLDc0U3u5BctXL1D_v/pub?gid=1630462233&single=true&output=csv',
+    // SWAP: full link to your Terms of Use page
     TERMS_URL: 'https://yourname.github.io/terms.html',
+    // SWAP: full link to your Privacy Policy page
     PRIVACY_URL: 'https://yourname.github.io/privacy.html'
   };
 
@@ -24,7 +36,6 @@
   var LIMIT_MSG = 'Contact Administrator for assistance, or try again in twenty-four hours.';
 
   var ICON = {
-    lock: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z"/></svg>',
     bell: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>',
     x: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
     wa: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/><path fill="#fff" d="M8 7c0 5 4 9 9 9l1.5-2-3-1.5-1.2 1.2a6 6 0 0 1-3-3L12.5 9.5 11 6.5 8 7z"/></svg>',
@@ -33,12 +44,22 @@
     fb: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12z"/></svg>'
   };
 
+  var GEAR = (function () {
+    var t = '';
+    for (var i = 0; i < 16; i++) t += '<rect x="94" y="4" width="12" height="12" rx="2" transform="rotate(' + (i * 22.5) + ' 100 100)"/>';
+    return '<svg class="al-gear" viewBox="0 0 200 200" fill="currentColor"><circle cx="100" cy="100" r="88" fill="none" stroke="currentColor" stroke-width="8"/>' + t + '</svg>';
+  })();
+
   var css = [
     '#app-lock,#app-lock *{box-sizing:border-box;font-family:Roboto,sans-serif;font-size:18px}',
     '#app-lock .al-wrap{position:fixed;top:0;left:0;width:100dvw;height:100dvh;background:#fff;color:#000;overflow-y:auto;padding:24px 20px 40px;z-index:2147483646;-webkit-overflow-scrolling:touch}',
     '#app-lock .al-mod{padding:0}',
     '#app-lock .al-top{text-align:center;margin-bottom:12px}',
-    '#app-lock .al-top svg{width:72px;height:72px;color:#1877F2}',
+    '#app-lock .al-logo{position:relative;width:200px;height:200px;margin:0 auto}',
+    '#app-lock .al-gear{position:absolute;top:0;left:0;width:200px;height:200px;color:#1877F2;animation:als 10s linear infinite}',
+    '#app-lock .al-logo img{position:absolute;top:20px;left:20px;width:160px;height:160px;border-radius:50%;object-fit:cover;background:#fff}',
+    '#app-lock .al-ti{margin-bottom:6px;font-size:20px;font-weight:700}',
+    '#app-lock .al-au{margin-top:8px;color:#1877F2;font-weight:700}',
     '#app-lock h1{margin:8px 0 0;color:#1877F2;font-size:26px;font-weight:700}',
     '#app-lock .al-top p{margin:4px 0 0;color:#000}',
     '#app-lock .al-tabs{display:flex;gap:10px;margin:16px 0 8px}',
@@ -160,7 +181,7 @@
   /* ---------- Screens ---------- */
 
   function head() {
-    return '<div class="al-top">' + ICON.lock + '<h1>' + esc(CONFIG.APP_NAME) + '</h1><p>Secure access</p></div>';
+    return '<div class="al-top"><div class="al-logo">' + GEAR + '<img src="' + esc(CONFIG.LOGO_URL) + '" alt="" onerror="this.style.visibility=\'hidden\'"></div><h1>' + esc(CONFIG.APP_NAME) + '</h1><p>Secure access</p></div>';
   }
   function reach() {
     var a = [];
@@ -293,7 +314,7 @@
     inModal = true;
     var m = LS.g('al_msgs') || [];
     V.innerHTML = '<div class="al-wrap al-mod"><div class="al-bar"><span>Messages</span><button id="al-x" aria-label="Close">' + ICON.x + '</button></div>' +
-      m.map(function (x) { return '<div class="al-card"><div class="al-dt">' + esc(x.d) + '</div><div>' + esc(x.m) + '</div></div>'; }).join('') + '</div>';
+      m.map(function (x) { return '<div class="al-card"><div class="al-dt">' + esc(x.d) + '</div>' + (x.t ? '<div class="al-ti">' + esc(x.t) + '</div>' : '') + '<div>' + esc(x.m) + '</div>' + (x.a ? '<div class="al-au">' + esc(x.a) + '</div>' : '') + '</div>'; }).join('') + '</div>';
     LS.s('al_seen', m.map(function (x) { return x.k; }));
     $('al-x').onclick = bell;
   }
@@ -329,11 +350,34 @@
     info().then(function (i) { return post({ action: 'analytics', event: 'Scheduled', name: s.n, info: i }, true); });
   }
 
+  /* ---------- Published Status CSV: checked every 5 seconds, GAS is called only when something changed ---------- */
+
+  function bkt(c) {
+    var s = String(c || '').trim().toLowerCase(), h = 5381;
+    if (s.indexOf('@') < 0) s = s.replace(/\D/g, '');
+    for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return (h >>> 0) % 64;
+  }
+  var pubLast = null;
+  function poll() {
+    var s = sess();
+    if (!s || !CONFIG.STATUS_CSV_URL || document.hidden) return;
+    fetch(CONFIG.STATUS_CSV_URL + (CONFIG.STATUS_CSV_URL.indexOf('?') > -1 ? '&' : '?') + '_=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.text(); })
+      .then(function (t) {
+        var L = t.split(/\r?\n/).map(function (x) { return x.replace(/"/g, '').trim(); });
+        var mine = (L[0] || '') + '.' + (L[1 + bkt(s.c)] || '');
+        if (pubLast !== null && pubLast !== mine) { pubLast = mine; sync(); }
+        else pubLast = mine;
+      }).catch(function () { });
+  }
+
   function timers() {
     if (tm) return;
     tm = 1;
     setInterval(sync, 3600000);
     setInterval(pingA, 1800000);
+    setInterval(poll, 5000);
   }
 
   /* ---------- Usage tracking (local only, sent with the hourly check) ---------- */
